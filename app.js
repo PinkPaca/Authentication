@@ -3,6 +3,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
 const mongoose = require("mongoose");
+const encrypt = require("mongoose-encryption");
 
 const app = express();
 
@@ -14,10 +15,14 @@ app.use(bodyParser.urlencoded({
 
 mongoose.connect("mongodb://localhost:27017/userDB");
 
-const userSchema = {
+const userSchema = new mongoose.Schema({
   email: String,
   password: String
-};
+});
+
+const secret = "Thisisourlittlesecrete.";
+
+userSchema.plugin(encrypt, {secret: secret, encryptedFields: ['password']});
 
 const User = new mongoose.model("User", userSchema);
 
@@ -52,7 +57,7 @@ app.post("/login", async(req, res) => {
   if(foundUser) {
     if(foundUser.password === password) {
       res.render("secrets");
-    }else {
+    } else {
       res.send("Your password is wrong");
     }
   } else {
